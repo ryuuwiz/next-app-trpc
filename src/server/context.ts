@@ -1,11 +1,22 @@
+import {
+  SignedInAuthObject,
+  SignedOutAuthObject,
+  auth,
+} from "@clerk/nextjs/server";
 import { inferAsyncReturnType } from "@trpc/server";
-import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 
-export const createContext = async ({
-  req,
-  resHeaders,
-}: FetchCreateContextFnOptions) => {
-  return { req, resHeaders };
+interface AuthContext {
+  userAuth: SignedInAuthObject | SignedOutAuthObject;
+}
+
+export const createContextInner = async ({ userAuth }: AuthContext) => {
+  return {
+    userAuth,
+  };
+};
+
+export const createContext = async () => {
+  return await createContextInner({ userAuth: auth() });
 };
 
 export type Context = inferAsyncReturnType<typeof createContext>;

@@ -1,16 +1,28 @@
-import { initTRPC } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { Context } from "./context";
 
-// Avoid exporting the entire t-object
-// since it's not very descriptive.
-// For instance, the use of a t variable
-// is common in i18n libraries.
-export const t = initTRPC.context<Context>().create({
+const t = initTRPC.context<Context>().create({
   transformer: superjson,
+  errorFormatter({ shape }) {
+    return shape;
+  },
+});
+
+const isAuthed = t.middleware(({ next, ctx }) => {
+  if (!ctx.userAuth.userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      userAuth: ctx.userAuth,
+    },
+  });
 });
 
 // Base router and procedure helpers
 export const router = t.router;
 export const middleware = t.middleware;
 export const publicProcedure = t.procedure;
+// export this procedure to be used anywhere in your application
+export const protectedProcedure = t.procedure.use(isAuthed);

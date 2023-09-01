@@ -10,7 +10,13 @@ export function Greeting() {
       <p>Client:</p>
       {greeting.isLoading ?
         <p>Loading...</p> :
-        <p>{greeting.data?.greeting}</p>
+        greeting.data === undefined ?
+          <p>You are not authenticated</p>
+          :
+          <div>
+            <p>{greeting.data?.greeting}</p>
+            <p>{greeting.data?.secret}</p>
+          </div>
       }
     </>
   )
